@@ -105,7 +105,7 @@ export const Home = () => {
             })
             .catch((err) => {
                 console.log('Error al enviar:', err.response.data)
-                if(err.response.data.message == 'Acceso Denegado'){
+                if (err.response.data.message == 'Acceso Denegado') {
                     navigate('/')
                     Swal.fire({
                         title: "Acceso Restringido (Token Vencido - Invalido), Inicie Sesión",
@@ -123,7 +123,7 @@ export const Home = () => {
         setIsFormOpen(false);
     }
 
-    
+
 
 
     const exportToExcelas = (casos) => {
@@ -135,7 +135,7 @@ export const Home = () => {
             <div>
                 <Navigation />
                 {isFormOpen ? (
-                    <CaseForm caseData={caso} cerrar={closeForm} />
+                    <CaseForm caseData={caso} cerrar={closeForm} user = {user}/>
                 ) : (
                     <div className="containerp">
 
@@ -156,7 +156,7 @@ export const Home = () => {
                                 />
                             </label>
                             <button className="search-button" onClick={handleSearch}>Buscar</button>
-                            <button onClick={()=> exportToExcelas(casos)} className="excel-button">Descargar Excel</button>
+                            <button onClick={() => exportToExcelas(casos)} className="excel-button">Descargar Excel</button>
                         </div>
                         {filtrar && (
                             <div id="custom-filter-container" className="custom-filter-container">
@@ -246,11 +246,19 @@ export const Home = () => {
                                                     <td>{caso.estado}</td>
                                                     <td>{caso.juzgado.nombre}</td>
                                                     <td>
-                                                        <button onClick={() => openForm(caso)}>Ver</button>
-                                                        {user === 'admin' && (
-                                                            <button>Editar</button>
-                                                        )}
-                                                        <button>Descargar</button>
+                                                        <div className='conten-btn'>
+                                                        <button className='btn-g' onClick={() => openForm(caso)}><svg xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-eye" width="20" height="20" viewBox="0 0 24 24" strokeWidth="1.5" stroke="#00bfd8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                            <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                                                            <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                                                        </svg></button>
+                                                        <button className='btn-g'><svg xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-download" width="20" height="20" viewBox="0 0 24 24" strokeWidth="1.5" stroke="#00bfd8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                                                            <path d="M7 11l5 5l5 -5" />
+                                                            <path d="M12 4l0 12" />
+                                                        </svg></button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
