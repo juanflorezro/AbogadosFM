@@ -83,6 +83,7 @@ export const Home = () => {
         setFiltrar(e.target.checked)
     }
     const handleSearch = () => {
+        setLoader(true)
         let data = {}
         if (proceso) data.titulo = proceso
 
@@ -99,6 +100,7 @@ export const Home = () => {
         Axios('POST', 'casos/caso', data)
             .then((res) => {
                 setCasos(res.data)
+                setLoader(false)
             })
             .catch((err) => {
                 console.log('Error al enviar:', err.response.data)

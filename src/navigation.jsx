@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import Axios from './hooks/useAxios'
-
+import Cookies from "js-cookie"
 import './nav.css'
 const Navigation = () => {
   const [user, setUser] = useState('')
@@ -18,18 +18,15 @@ const Navigation = () => {
   },[])
   function deleteAllCookies() {
     // Obtén todas las cookies
-    const cookies = document.cookie.split(';');
+    const cookies = Cookies.get();
 
     // Recorre cada cookie y elimínala
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i];
-      const eqPos = cookie.indexOf('=');
-      const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-
-      // Configura la cookie con una fecha de expiración pasada
-      document.cookie = name + '=; Max-Age=0; path=/; domain=' + window.location.hostname;
+    for (let name in cookies) {
+        if (cookies.hasOwnProperty(name)) {
+            Cookies.remove(name, { path: '' }); // Elimina la cookie para todas las rutas
+        }
     }
-  }
+}
 
   const logout = () => {
     deleteAllCookies()
