@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import './CaseForm.css'; // Estilos CSS externos
+import './caseForm.css'; // Estilos CSS externos
 
 const CaseForm = ({ caseData, cerrar }) => {
     const [formData, setFormData] = useState(caseData || {});
