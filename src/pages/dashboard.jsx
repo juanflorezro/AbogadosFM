@@ -4,7 +4,7 @@ import Axios from '../hooks/useAxios'
 import { useState } from 'react';
 export const Dashboard = () => {
     const [file, setFile] = useState(null);
-
+    const [loader, setLoader] = useState(false)
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
     };
@@ -28,7 +28,7 @@ export const Dashboard = () => {
                     numero: row.getCell(1).value,
                     codigo: row.getCell(2).value,
                     titulo: row.getCell(3).value,
-                    cliente: {nombre: row.getCell(4).value},
+                    cliente: { nombre: row.getCell(4).value },
                     asunto: row.getCell(5).value,
                     creacion: row.getCell(6).value,
                     ubicacionDelExpediente: row.getCell(7).value,
@@ -36,17 +36,17 @@ export const Dashboard = () => {
                     area: row.getCell(9).value,
                     fechaDeAsignacion: row.getCell(10).value,
                     centroDeTrabajo: row.getCell(11).value,
-                    directorACargo: { nombre: row.getCell(12).value},
-                    abogadoACargo: { nombre :row.getCell(13).value},
-                    abogadoInternoDeLaCompania: { nombre: row.getCell(14).value},
-                    siniestro: { numero: row.getCell(15).value},
+                    directorACargo: { nombre: row.getCell(12).value },
+                    abogadoACargo: { nombre: row.getCell(13).value },
+                    abogadoInternoDeLaCompania: { nombre: row.getCell(14).value },
+                    siniestro: { numero: row.getCell(15).value },
                     fechaSiniestro: row.getCell(16).value,
                     poliza: row.getCell(17).value,
                     ramo: row.getCell(18).value,
                     amparo: row.getCell(19).value,
                     numeroAplicativo: row.getCell(20).value,
                     ciudad: row.getCell(21).value,
-                    juzgadoInt: { nombre: row.getCell(22).value},
+                    juzgadoInt: { nombre: row.getCell(22).value },
                     radicado: row.getCell(23).value,
                     parteActiva: row.getCell(24).value,
                     partePasiva: row.getCell(25).value,
@@ -76,10 +76,10 @@ export const Dashboard = () => {
                     tipoDeMoneda: row.getCell(49).value,
                     fechaDeTerminacion: row.getCell(50).value,
                     motivoDeTerminacion: row.getCell(51).value,
-                    cliente2: { nombre: row.getCell(52).value},
+                    cliente2: { nombre: row.getCell(52).value },
                     fechaDeAsignacion2: row.getCell(53).value,
-                    abogadoInternoDeLaCompania2: {nombre: row.getCell(54).value},
-                    siniestro2: {numero: row.getCell(55).value},
+                    abogadoInternoDeLaCompania2: { nombre: row.getCell(54).value },
+                    siniestro2: { numero: row.getCell(55).value },
                     numeroDeAplicativo2: row.getCell(56).value,
                     fechaDeNotificacion2: row.getCell(57).value,
                     seInicioEjecutivoAContinuacionDeOrdinario: row.getCell(58).value,
@@ -95,7 +95,7 @@ export const Dashboard = () => {
                     detalleDeMateria: row.getCell(68).value,
                     estado: row.getCell(69).value,
                     estadoInterno: row.getCell(70).value,
-                    juzgado: { nombre: row.getCell(71).value},
+                    juzgado: { nombre: row.getCell(71).value },
                     moneda: row.getCell(72).value,
                     cuantia: row.getCell(73).value,
                     contingenciaReal: row.getCell(74).value,
@@ -115,7 +115,7 @@ export const Dashboard = () => {
                     fechaUltimaActuacion: row.getCell(88).value,
                     tituloUltimaActuacion: row.getCell(89).value,
                     fechaUltimoCambioDeEstado: row.getCell(90).value,
-                    usuarioCreador: {nombre: row.getCell(91).value},
+                    usuarioCreador: { nombre: row.getCell(91).value },
                     notificado: row.getCell(92).value,
                     cartera: row.getCell(93).value,
                     numeroCredencial: row.getCell(94).value,
@@ -125,16 +125,20 @@ export const Dashboard = () => {
 
                 rows.push(rowData);
             });
-
+            setLoader(true)
             Axios('POST', 'casos/crearlote', rows)
-            .then(res => {
-                console.log(res)
-                Swal.fire({
-                    title: "Datos agregados Correctamente",
-                    text: "Listo",
-                    icon: "success"
+                .then(res => {
+                    console.log(res)
+                    setLoader(false)
+                    Swal.fire({
+                        title: "Datos agregados Correctamente",
+                        text: "Listo",
+                        icon: "success"
+                    })
                 })
-            })
+                .catch(err => {
+                    console.log(err)
+                })
         };
 
         reader.readAsArrayBuffer(file);
@@ -143,9 +147,22 @@ export const Dashboard = () => {
         <>
             <div>
                 <Navigation />
+
                 <div>
                     <input type="file" accept=".xlsx" onChange={handleFileChange} />
-                    <button onClick={handleImport}>Importar</button>
+                    {file && (
+                        <>
+                            {loader ? (
+                                <div className="loader-container">
+                                    <div className="loader"></div>
+                                </div>
+                            ) : (
+                                <button onClick={handleImport}>Importar</button>
+                            )}
+                        </>
+                    )}
+
+
                 </div>
             </div>
         </>
