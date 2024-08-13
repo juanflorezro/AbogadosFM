@@ -39,6 +39,7 @@ export const Home = () => {
         Axios('GET', 'casos/', null)
             .then((res) => {
                 setCasos(res.data)
+                console.log(res.data)
                 setAreas(res.data)
                 setLoader(false)
             })
@@ -129,7 +130,7 @@ export const Home = () => {
     const exportToExcelas = (casos) => {
         exportToExcel(casos)
     }
-
+    
     return (
         <>
             <div>
