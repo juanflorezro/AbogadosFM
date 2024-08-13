@@ -6,6 +6,7 @@ import CaseForm from '../components/caseForm'
 import ExcelJS from 'exceljs'
 import { saveAs } from 'file-saver';
 import AOS from 'aos'
+import { useNavigate } from 'react-router-dom'
 export const Home = () => {
     const [user, setUser] = useState('')
     const [casos, setCasos] = useState([])
@@ -26,6 +27,7 @@ export const Home = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const casesPerPage = 5
     const [loader, setLoader] = useState(true)
+    const navigate = useNavigate()
     useEffect(() => {
         AOS.init();
         Axios('POST', 'login/validacion', null)
@@ -104,6 +106,14 @@ export const Home = () => {
             })
             .catch((err) => {
                 console.log('Error al enviar:', err.response.data)
+                if(err.response.data.message == 'Acceso Denegado'){
+                    navigate('/')
+                    Swal.fire({
+                        title: "Acceso Restringido (Token Vencido - Invalido), Inicie Sesión",
+                        text: err.response.data.message,
+                        icon: "warning"
+                    })
+                }
             })
     }
     const openForm = (casoV) => {
