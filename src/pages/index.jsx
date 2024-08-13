@@ -25,7 +25,7 @@ export const Home = () => {
     const [caso, setCaso] = useState({})
     const [currentPage, setCurrentPage] = useState(1)
     const casesPerPage = 5
-
+    const [loader, setLoader] = useState(true)
     useEffect(() => {
         AOS.init();
         Axios('POST', 'login/validacion', null)
@@ -39,6 +39,7 @@ export const Home = () => {
             .then((res) => {
                 setCasos(res.data)
                 setAreas(res.data)
+                setLoader(false)
             })
             .catch((err) => {
                 console.log(err)
@@ -115,7 +116,7 @@ export const Home = () => {
         // Crea un nuevo libro de trabajo y una nueva hoja
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Casos');
-    
+
         // Define los encabezados de columna
         const headers = [
             'numero', 'codigo', 'titulo', 'cliente', 'asunto', 'creacion', 'ubicacionDelExpediente',
@@ -140,10 +141,10 @@ export const Home = () => {
             'fechaUltimaActuacion', 'tituloUltimaActuacion', 'fechaUltimoCambioDeEstado', 'usuarioCreador',
             'notificado', 'cartera', 'numeroCredencial', 'usuarioCredencial', 'rutCredencial'
         ];
-    
+
         // Agrega encabezados
         worksheet.addRow(headers);
-    
+
         // Estilo para los encabezados
         const headerRow = worksheet.getRow(1);
         headerRow.font = { bold: true, size: 12 };
@@ -153,7 +154,7 @@ export const Home = () => {
             pattern: 'solid',
             fgColor: { argb: 'FFFF00' } // Color de fondo amarillo para los encabezados
         };
-        
+
         // Estilo para todas las celdas
         worksheet.columns.forEach(column => {
             column.eachCell({ includeEmpty: true }, (cell) => {
@@ -166,7 +167,7 @@ export const Home = () => {
                 }; // Aplicar borde delgado
             });
         });
-    
+
         // Rellenar datos
         casos.forEach(caso => {
             worksheet.addRow([
@@ -201,29 +202,29 @@ export const Home = () => {
                 caso.cartera, caso.numeroCredencial, caso.usuarioCredencial, caso.rutCredencial
             ]);
         });
-    
+
         // Ajusta el tamaño de las columnas para adaptarse al contenido
         worksheet.columns.forEach(column => {
             const maxLength = column.values.reduce((max, value) => Math.max(max, value ? value.toString().length : 0), 0);
-            column.width = maxLength < 10 ? 10 : maxLength+10;
+            column.width = maxLength < 10 ? 10 : maxLength + 10;
         });
-    
+
         // Genera un buffer del archivo
         const buffer = await workbook.xlsx.writeBuffer();
-        
+
         // Guarda el archivo
         saveAs(new Blob([buffer]), 'casos.xlsx');
     };
-    
 
-    
+
+
 
     return (
         <>
             <div>
                 <Navigation />
                 {isFormOpen ? (
-                    <CaseForm caseData = {caso} cerrar = {closeForm} />
+                    <CaseForm caseData={caso} cerrar={closeForm} />
                 ) : (
                     <div className="containerp">
 
@@ -306,59 +307,65 @@ export const Home = () => {
                                 </div>
                             </div>
                         )}
+                        {loader ? (
+                            <div className="loader-container"><div className="loader"></div></div>
 
-                        <div className="table-wrapper">
-                            <div className="table-container">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Código</th>
-                                            <th>Proceso</th>
-                                            <th>Cliente - Asunto</th>
-                                            <th>Estado</th>
-                                            <th>Juzgado</th>
-                                            <th>Opciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {currentCases.map((caso, index) => (
-                                            <tr key={index}>
-                                                <td>{indexOfFirstCase + index + 1}</td>
-                                                <td>{caso.codigo}</td>
-                                                <td>{caso.titulo}</td>
-                                                <td>{caso.cliente.nombre}</td>
-                                                <td>{caso.estado}</td>
-                                                <td>{caso.juzgado.nombre}</td>
-                                                <td>
-                                                    <button onClick={()=>openForm(caso)}>Ver</button>
-                                                    {user === 'admin' && (
-                                                        <button>Editar</button>
-                                                    )}
-                                                    <button>Descargar</button>
-                                                </td>
+                        ) : (
+                            <div className="table-wrapper">
+                                <div className="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Código</th>
+                                                <th>Proceso</th>
+                                                <th>Cliente - Asunto</th>
+                                                <th>Estado</th>
+                                                <th>Juzgado</th>
+                                                <th>Opciones</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                        </thead>
+                                        <tbody>
+                                            {currentCases.map((caso, index) => (
+                                                <tr key={index}>
+                                                    <td>{indexOfFirstCase + index + 1}</td>
+                                                    <td>{caso.codigo}</td>
+                                                    <td>{caso.titulo}</td>
+                                                    <td>{caso.cliente.nombre}</td>
+                                                    <td>{caso.estado}</td>
+                                                    <td>{caso.juzgado.nombre}</td>
+                                                    <td>
+                                                        <button onClick={() => openForm(caso)}>Ver</button>
+                                                        {user === 'admin' && (
+                                                            <button>Editar</button>
+                                                        )}
+                                                        <button>Descargar</button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                            <div className="pagination">
-                                <button
-                                    onClick={handlePrevious}
-                                    className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                    &laquo; Anterior
-                                </button>
-                                <span className="page-item active">
-                                    {currentPage}
-                                </span>
-                                <button
-                                    onClick={handleNext}
-                                    className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                    Siguiente &raquo;
-                                </button>
+                                <div className="pagination">
+                                    <button
+                                        onClick={handlePrevious}
+                                        className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                        &laquo; Anterior
+                                    </button>
+                                    <span className="page-item active">
+                                        {currentPage}
+                                    </span>
+                                    <button
+                                        onClick={handleNext}
+                                        className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                                        Siguiente &raquo;
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        )
+                        }
+
                     </div>
                 )}
 

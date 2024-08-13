@@ -9,7 +9,8 @@ export const Landing = () => {
     const [usuario, setUsuario] = useState(null)
     const [contraseña, setContraseña] = useState(null)
     const navigate = useNavigate()
-    
+    const [loader, setLoader] = useState(false)
+
     useEffect(() => {
         Axios('POST', 'login/validacion', null)
             .then((res) => {
@@ -23,12 +24,13 @@ export const Landing = () => {
                 })
             })
             .catch(err => {
-                console.log(err.response.data)
+                console.log(err.response)
             })
     })
 
 
     const login = () => {
+        setLoader(true)
         Axios('POST', 'login/autenticacion', { user: { usuario: usuario, contraseña: contraseña } })
             .then((res) => {
                 console.log(res)
@@ -40,6 +42,7 @@ export const Landing = () => {
                 document.cookie = `iv = ${res.data.resp.iv}; max-age=${60 * 480}; path=/; samesite=strict`
                 document.cookie = `encripted = ${res.data.resp.encripted}; max-age=${60 * 480}; path=/; samesite=strict`
                 navigate('/Home')
+                setLoader(false)
             })
             .catch((err) => {
                 console.log(err)
@@ -48,6 +51,7 @@ export const Landing = () => {
                     text: err.response.data.error,
                     icon: "warning"
                 })
+                setLoader(false)
             })
 
     }
@@ -82,7 +86,15 @@ export const Landing = () => {
                                 <a href="#">Signup</a>
                             </div>
                             <div className="inputBox">
-                                <input type="submit" value="Login" onClick={login} />
+                                {loader ? (
+                                    <div className="loader-container"><div className="loader"></div></div>
+
+                                ) : (
+                                    <input type="submit" value="Login" onClick={login} />
+
+                                )
+                                }
+
                             </div>
                         </div>
                     </div>
