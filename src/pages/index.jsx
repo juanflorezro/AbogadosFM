@@ -38,7 +38,8 @@ export const Home = () => {
             })
         Axios('GET', 'casos/', null)
             .then((res) => {
-                setCasos(res.data)
+                const casosInverted = res.data.reverse(); // Invierte los datos aquí
+            setCasos(casosInverted);
                 console.log(res.data)
                 setAreas(res.data)
                 setLoader(false)

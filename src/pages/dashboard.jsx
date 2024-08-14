@@ -5,6 +5,9 @@ import { useState } from 'react';
 export const Dashboard = () => {
     const [file, setFile] = useState(null);
     const [loader, setLoader] = useState(false)
+    const [porcentaje, setPorcentaje] = useState(0)
+    const [totales, setTotales] =useState(0)
+    const [valor, setValor] = useState(0)
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
     };
@@ -126,19 +129,41 @@ export const Dashboard = () => {
                 rows.push(rowData);
             });
             setLoader(true)
-            Axios('POST', 'casos/crearlote', rows)
-                .then(res => {
-                    console.log(res)
-                    setLoader(false)
+            const largo = rows.length-1
+            setTotales(rows.length)
+            for (let i = 0; i < rows.length; i++) {
+
+                
+                try {
+                    const res = await Axios('POST','casos/crear', rows[i]);
+                    console.log(`Caso ${i + 1} agregado:`, res.data);
+                    setPorcentaje(((i+1)/(largo+1))*100)
+                    
+                    setValor(i+1)
+                    if(i==largo){
+                        Swal.fire({
+                            title: "Datos agregados Correctamente",
+                            text: "Listo",
+                            icon: "success"
+                        })
+                        setPorcentaje(0)
+                        setValor(0)
+                        setTotales(0)
+                        setFile(null)
+                    }
+                    // Puedes mostrar una notificación por cada caso
+                   
+                } catch (err) {
+                    console.error(`Error al agregar caso ${i + 1}:`, err);
+                    // Puedes manejar errores individuales aquí
                     Swal.fire({
-                        title: "Datos agregados Correctamente",
-                        text: "Listo",
-                        icon: "success"
-                    })
-                })
-                .catch(err => {
-                    console.log(err)
-                })
+                        title: `Error en el caso ${i + 1}`,
+                        text: err.message,
+                        icon: "error"
+                    });
+                }
+                if(i==largo) setLoader(false)
+            }
         };
 
         reader.readAsArrayBuffer(file);
@@ -154,7 +179,7 @@ export const Dashboard = () => {
                         <>
                             {loader ? (
                                 <div className="loader-container">
-                                    <div className="loader"></div>
+                                    <div className="loader"></div> 
                                 </div>
                             ) : (
                                 <button onClick={handleImport}>Importar</button>
@@ -164,6 +189,7 @@ export const Dashboard = () => {
 
 
                 </div>
+                <progress id="file" max={totales} value={valor}></progress><div>{porcentaje}%</div>
             </div>
         </>
     )
