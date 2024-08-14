@@ -229,12 +229,12 @@ export const Home = () => {
                                     <table>
                                         <thead>
                                             <tr>
-                                                <th>#</th>
-                                                <th>Código</th>
-                                                <th>Proceso</th>
-                                                <th>Cliente - Asunto</th>
-                                                <th>Estado</th>
-                                                <th>Juzgado</th>
+                                                <th>N°</th>
+                                                <th>Titulo</th>
+                                                <th>Cliente</th>
+                                                <th>Area</th>
+                                                <th>Centro De Trabajo</th>
+                                                <th>Abogado A Cargo</th>
                                                 <th>Opciones</th>
                                             </tr>
                                         </thead>
