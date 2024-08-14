@@ -7,7 +7,7 @@ const ProtectedRoute = () => {
     const navigate = useNavigate()
     useEffect(()=>{
         tokenA()
-      })
+      },[])
     const tokenA = () => {
         Axios('POST', 'login/validacion', null)
             .then((res) => {
