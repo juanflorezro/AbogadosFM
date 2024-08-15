@@ -31,6 +31,7 @@ export const Home = () => {
         AOS.init();
         Axios('POST', 'login/validacion', null)
             .then((res) => {
+                console.log('se cargo el usuario 1 de 4')
                 setUser(res.data.user.usuario)
             })
             .catch(err => {
@@ -38,17 +39,23 @@ export const Home = () => {
             })
         Axios('GET', 'casos/', null)
             .then((res) => {
-            const casosInverted = res.data.reverse(); // Invierte los datos aquí
-            setCasos(casosInverted);
-                console.log(res.data)
+                const casosInverted = res.data.reverse(); // Invierte los datos aquí
+                setCasos(casosInverted);
+                console.log('se cargaron los casos 2 de 4')
                 setAreas(res.data)
+                cargarPersonalizado()
                 setLoader(false)
             })
             .catch((err) => {
                 console.log(err)
             })
+
+
+    }, [])
+    const cargarPersonalizado = () => {
         Axios('GET', 'clientes/', null)
             .then((res) => {
+                console.log('se cargaron los clientes 3 de 4')
                 setClientes(res.data)
             })
             .catch((err) => {
@@ -56,14 +63,13 @@ export const Home = () => {
             })
         Axios('GET', 'usuarios/', null)
             .then((res) => {
+                console.log('se cargaron los usuario 4 de 4')
                 setUsuarios(res.data)
             })
             .catch((err) => {
                 console.log(err, 'usuarios Faild')
             })
-
-    }, [])
-
+    }
     const indexOfLastCase = currentPage * casesPerPage
     const indexOfFirstCase = indexOfLastCase - casesPerPage
     const currentCases = casos.slice(indexOfFirstCase, indexOfLastCase)
@@ -103,6 +109,7 @@ export const Home = () => {
         Axios('POST', 'casos/caso', data)
             .then((res) => {
                 setCasos(res.data)
+                cargarPersonalizado()
                 setLoader(false)
             })
             .catch((err) => {
@@ -131,13 +138,13 @@ export const Home = () => {
     const exportToExcelas = (casos) => {
         exportToExcel(casos)
     }
-    
+
     return (
         <>
             <div>
                 <Navigation />
                 {isFormOpen ? (
-                    <CaseForm caseData={caso} cerrar={closeForm} user = {user}/>
+                    <CaseForm caseData={caso} cerrar={closeForm} user={user} />
                 ) : (
                     <div className="containerp">
 
@@ -249,17 +256,17 @@ export const Home = () => {
                                                     <td>{caso.juzgado.nombre}</td>
                                                     <td>
                                                         <div className='conten-btn'>
-                                                        <button className='btn-g' onClick={() => openForm(caso)}><svg xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-eye" width="20" height="20" viewBox="0 0 24 24" strokeWidth="1.5" stroke="#00bfd8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                            <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                                                            <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
-                                                        </svg></button>
-                                                        <button className='btn-g' onClick={()=> exportToExcel([caso])}><svg xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-download" width="20" height="20" viewBox="0 0 24 24" strokeWidth="1.5" stroke="#00bfd8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-                                                            <path d="M7 11l5 5l5 -5" />
-                                                            <path d="M12 4l0 12" />
-                                                        </svg></button>
+                                                            <button className='btn-g' onClick={() => openForm(caso)}><svg xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-eye" width="20" height="20" viewBox="0 0 24 24" strokeWidth="1.5" stroke="#00bfd8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                                <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                                                                <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                                                            </svg></button>
+                                                            <button className='btn-g' onClick={() => exportToExcel([caso])}><svg xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-download" width="20" height="20" viewBox="0 0 24 24" strokeWidth="1.5" stroke="#00bfd8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                                                                <path d="M7 11l5 5l5 -5" />
+                                                                <path d="M12 4l0 12" />
+                                                            </svg></button>
                                                         </div>
                                                     </td>
                                                 </tr>

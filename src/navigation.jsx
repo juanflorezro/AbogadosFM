@@ -10,7 +10,6 @@ const Navigation = () => {
     Axios('POST', 'login/validacion', null)
       .then((res) => {
         setUser(res.data.user.usuario)
-        console.log(res.data.user.usuario)
       })
       .catch(err => {
         console.log(err.response.data)

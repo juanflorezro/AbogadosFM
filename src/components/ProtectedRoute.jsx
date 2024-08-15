@@ -10,9 +10,9 @@ const ProtectedRoute = () => {
       },[])
     const tokenA = () => {
         Axios('POST', 'login/validacion', null)
-            .then((res) => {
+            .then(() => {
                 navigate('/home')
-                console.log(res)
+                console.log('el usuario esta validado')
             })
             .catch(err => {
                 navigate('/')

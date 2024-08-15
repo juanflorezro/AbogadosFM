@@ -3,20 +3,10 @@ import {  Home } from './pages'
 import { Landing } from "./pages/landing"
 import { Dashboard } from "./pages/dashboard"
 import ProtectedRoute from './components/ProtectedRoute'
-import { useEffect } from "react"
-import Axios from './hooks/useAxios.jsx'
+
 import Ayuda from "./pages/ayuda"
 function App() {
-  useEffect(() => {
-    Axios('POST', 'login/validacion', null)
-        .then((res) => {
-            console.log('entrando validando', res)
-        })
-        .catch(err => {
-            console.log(err.response.data)
-        })
 
-}, [])
   return (
     <>
       <BrowserRouter>
