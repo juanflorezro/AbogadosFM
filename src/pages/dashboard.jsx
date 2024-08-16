@@ -19,111 +19,121 @@ export const Dashboard = () => {
         reader.onload = async (e) => {
             const buffer = e.target.result;
             const workbook = new ExcelJS.Workbook();
+            try {
+                await workbook.xlsx.load(buffer);
+            } catch (error) {
+                console.error('Error loading workbook:', error);
+                return;
+            }
             await workbook.xlsx.load(buffer);
-
-            const worksheet = workbook.getWorksheet('Casos'); // Asegúrate que el nombre coincida con la hoja en Excel
+            if (!buffer) {
+                console.error('Buffer is undefined or null');
+                return;
+            }
+            const worksheet = workbook.getWorksheet('Procesos'); // Asegúrate que el nombre coincida con la hoja en Excel
             const rows = [];
+            if (!worksheet) {
+                console.error('Worksheet not found!');
+                return;
+            }
 
             worksheet.eachRow((row, rowNumber) => {
                 if (rowNumber === 1) return; // Saltar la fila de encabezados
-
+                const isValidDate = (date) => {
+                    if (date === null || date === "" || date === "N/A") return false; // Consideramos nulos y vacíos como no válidos
+                    const parsedDate = new Date(date);
+                    return !isNaN(parsedDate.getTime()); // Devuelve true si la fecha es válida
+                };
+                
+                const parseDate = (dateStr) => {
+                    if (typeof dateStr === 'string') { // Verifica si dateStr es una cadena
+                        const [day, month, year] = dateStr.split('/');
+                        if (day && month && year) {
+                            const isoDateStr = `${year}-${month}-${day}`;
+                            return new Date(isoDateStr);
+                        }
+                    }
+                    return null; // Si no se puede parsear, devolvemos null
+                };
+                
+                const normalizeValue = (value) => {
+                    if (value === "" || value === "N/A") return null; // Devolvemos null para valores vacíos o "N/A"
+                    
+                    // Intentar convertir a fecha si es una cadena de fecha
+                    const parsedDate = parseDate(value);
+                    if (parsedDate && isValidDate(parsedDate)) {
+                        return parsedDate; // Devolver objeto Date si la fecha es válida
+                    }
+                    
+                    return value; // Devolver el valor original si no es una fecha válida
+                };
                 const rowData = {
-                    numero: row.getCell(1).value,
-                    codigo: row.getCell(2).value,
-                    titulo: row.getCell(3).value,
-                    cliente: { nombre: row.getCell(4).value },
-                    asunto: row.getCell(5).value,
-                    creacion: row.getCell(6).value,
-                    ubicacionDelExpediente: row.getCell(7).value,
-                    codigoInterno: row.getCell(8).value,
-                    area: row.getCell(9).value,
-                    fechaDeAsignacion: row.getCell(10).value,
-                    centroDeTrabajo: row.getCell(11).value,
-                    directorACargo: { nombre: row.getCell(12).value },
-                    abogadoACargo: { nombre: row.getCell(13).value },
-                    abogadoInternoDeLaCompania: { nombre: row.getCell(14).value },
-                    siniestro: { numero: row.getCell(15).value },
-                    fechaSiniestro: row.getCell(16).value,
-                    poliza: row.getCell(17).value,
-                    ramo: row.getCell(18).value,
-                    amparo: row.getCell(19).value,
-                    numeroAplicativo: row.getCell(20).value,
-                    ciudad: row.getCell(21).value,
-                    juzgadoInt: { nombre: row.getCell(22).value },
-                    radicado: row.getCell(23).value,
-                    parteActiva: row.getCell(24).value,
-                    partePasiva: row.getCell(25).value,
-                    tipoDeTramite: row.getCell(26).value,
-                    claseDeProceso: row.getCell(27).value,
-                    tipoDeVinculacionCliente: row.getCell(28).value,
-                    pretensionesEnDinero: row.getCell(29).value,
-                    calificacionInicialContingencia: row.getCell(30).value,
-                    calificacionActualContingencia: row.getCell(31).value,
-                    motivoDeLaCalificacion: row.getCell(32).value,
-                    fechaAdmisionVinculacion: row.getCell(33).value,
-                    fechaDeNotificacion: row.getCell(34).value,
-                    instancia: row.getCell(35).value,
-                    etapaProcesal: row.getCell(36).value,
-                    claseDeMedidaCautelar: row.getCell(37).value,
-                    honorariosAsignados: row.getCell(38).value,
-                    autoridadDeConocimiento: row.getCell(39).value,
-                    delito: row.getCell(40).value,
-                    placa: row.getCell(41).value,
-                    evento: row.getCell(42).value,
-                    probabilidadDeExito: row.getCell(43).value,
-                    valorIndemnizadoCliente: row.getCell(44).value,
-                    entidadAfectada: row.getCell(45).value,
-                    fechaDePagoCliente: row.getCell(46).value,
-                    tipoContragarantia: row.getCell(47).value,
-                    montoDeProvision: row.getCell(48).value,
-                    tipoDeMoneda: row.getCell(49).value,
-                    fechaDeTerminacion: row.getCell(50).value,
-                    motivoDeTerminacion: row.getCell(51).value,
-                    cliente2: { nombre: row.getCell(52).value },
-                    fechaDeAsignacion2: row.getCell(53).value,
-                    abogadoInternoDeLaCompania2: { nombre: row.getCell(54).value },
-                    siniestro2: { numero: row.getCell(55).value },
-                    numeroDeAplicativo2: row.getCell(56).value,
-                    fechaDeNotificacion2: row.getCell(57).value,
-                    seInicioEjecutivoAContinuacionDeOrdinario: row.getCell(58).value,
-                    honorariosAsignados2: row.getCell(59).value,
-                    valorPagado: row.getCell(60).value,
-                    personaQueRealizoElPago: row.getCell(61).value,
-                    fechaDeRadicacionDeLaContestacion: row.getCell(62).value,
-                    fechaDeRadicacionDeLaContestacion2: row.getCell(63).value,
-                    departamento: row.getCell(64).value,
-                    asegurado: row.getCell(65).value,
-                    jurisdiccion: row.getCell(66).value,
-                    materia: row.getCell(67).value,
-                    detalleDeMateria: row.getCell(68).value,
-                    estado: row.getCell(69).value,
-                    estadoInterno: row.getCell(70).value,
-                    juzgado: { nombre: row.getCell(71).value },
-                    moneda: row.getCell(72).value,
-                    cuantia: row.getCell(73).value,
-                    contingenciaReal: row.getCell(74).value,
-                    provision: row.getCell(75).value,
-                    condenaArreglo: row.getCell(76).value,
-                    totalComisiones: row.getCell(77).value,
-                    totalRecaudacion: row.getCell(78).value,
-                    totalGastos: row.getCell(79).value,
-                    fechaInicio: row.getCell(80).value,
-                    fechaTermino: row.getCell(81).value,
-                    flujoDeTrabajo: row.getCell(82).value,
-                    etapaDeFlujo: row.getCell(83).value,
-                    primeraParteActiva: row.getCell(84).value,
-                    primeraPartePasiva: row.getCell(85).value,
-                    usuariosInvolucrados: row.getCell(86).value,
-                    ultimaTareaFinalizada: row.getCell(87).value,
-                    fechaUltimaActuacion: row.getCell(88).value,
-                    tituloUltimaActuacion: row.getCell(89).value,
-                    fechaUltimoCambioDeEstado: row.getCell(90).value,
-                    usuarioCreador: { nombre: row.getCell(91).value },
-                    notificado: row.getCell(92).value,
-                    cartera: row.getCell(93).value,
-                    numeroCredencial: row.getCell(94).value,
-                    usuarioCredencial: row.getCell(95).value,
-                    rutCredencial: row.getCell(96).value
+                    numero: normalizeValue(row.getCell(1).value),
+                    codigo: normalizeValue(row.getCell(2).value),
+                    titulo: normalizeValue(row.getCell(3).value),
+                    cliente: { nombre: normalizeValue(row.getCell(4).value) },
+                    asunto: normalizeValue(row.getCell(5).value),
+                    area: normalizeValue(row.getCell(6).value),
+                    fechaDeAsignacion: normalizeValue(row.getCell(7).value),
+                    centroDeTrabajo: normalizeValue(row.getCell(8).value),
+                    directorACargo: { nombre: normalizeValue(row.getCell(9).value) },
+                    abogadoACargo: { nombre: normalizeValue(row.getCell(10).value) },
+                    abogadoInternoDeLaCompania: { nombre: normalizeValue(row.getCell(11).value) },
+                    siniestro: { numero: normalizeValue(row.getCell(12).value) },
+                    fechaSiniestro: normalizeValue(row.getCell(13).value),
+                    poliza: normalizeValue(row.getCell(14).value),
+                    ramo: normalizeValue(row.getCell(15).value),
+                    amparo: normalizeValue(row.getCell(16).value),
+                    numeroAplicativo: normalizeValue(row.getCell(17).value),
+                    ciudad: normalizeValue(row.getCell(18).value),
+                    juzgadoInt: { nombre: normalizeValue(row.getCell(19).value) },
+                    radicado: normalizeValue(row.getCell(20).value),
+                    parteActiva: normalizeValue(row.getCell(21).value),
+                    partePasiva: normalizeValue(row.getCell(22).value),
+                    tipoDeTramite: normalizeValue(row.getCell(23).value),
+                    claseDeProceso: normalizeValue(row.getCell(24).value),
+                    tipoDeVinculacionCliente: normalizeValue(row.getCell(25).value),
+                    pretensionesEnDinero: normalizeValue(row.getCell(26).value),
+                    calificacionInicialContingencia: normalizeValue(row.getCell(27).value),
+                    calificacionActualContingencia: normalizeValue(row.getCell(28).value),
+                    motivoDeLaCalificacion: normalizeValue(row.getCell(29).value),
+                    fechaAdmisionVinculacion: normalizeValue(row.getCell(30).value),
+                    fechaDeNotificacion: normalizeValue(row.getCell(31).value),
+                    instancia: normalizeValue(row.getCell(32).value),
+                    etapaProcesal: normalizeValue(row.getCell(33).value),
+                    claseDeMedidaCautelar: normalizeValue(row.getCell(34).value),
+                    honorariosAsignados: normalizeValue(row.getCell(35).value),
+                    autoridadDeConocimiento: normalizeValue(row.getCell(36).value),
+                    delito: normalizeValue(row.getCell(37).value),
+                    placa: normalizeValue(row.getCell(38).value),
+                    evento: normalizeValue(row.getCell(39).value),
+                    probabilidadDeExito: normalizeValue(row.getCell(40).value),
+                    valorIndemnizadoCliente: normalizeValue(row.getCell(41).value),
+                    entidadAfectada: normalizeValue(row.getCell(42).value),
+                    fechaDePagoCliente: normalizeValue(row.getCell(43).value),
+                    tipoContragarantia: normalizeValue(row.getCell(44).value),
+                    montoDeProvision: normalizeValue(row.getCell(45).value),
+                    tipoDeMoneda: normalizeValue(row.getCell(46).value),
+                    fechaDeTerminacion: normalizeValue(row.getCell(47).value),
+                    motivoDeTerminacion: normalizeValue(row.getCell(48).value),
+                    cliente2: { nombre: normalizeValue(row.getCell(49).value) },
+                    fechaDeAsignacion2: normalizeValue(row.getCell(50).value),
+                    abogadoInternoDeLaCompania2: { nombre: normalizeValue(row.getCell(51).value) },
+                    siniestro2: { numero: normalizeValue(row.getCell(52).value) },
+                    numeroDeAplicativo2: normalizeValue(row.getCell(53).value),
+                    fechaDeNotificacion2: normalizeValue(row.getCell(54).value),
+                    seInicioEjecutivoAContinuacionDeOrdinario: normalizeValue(row.getCell(55).value),
+                    honorariosAsignados2: normalizeValue(row.getCell(56).value),
+                    valorPagado: normalizeValue(row.getCell(57).value),
+                    personaQueRealizoElPago: normalizeValue(row.getCell(58).value),
+                    fechaDeRadicacionDeLaContestacion: normalizeValue(row.getCell(59).value),
+                    fechaDeRadicacionDeLaContestacion2: normalizeValue(row.getCell(60).value),
+                    departamento: normalizeValue(row.getCell(62).value),
+                    asegurado: normalizeValue(row.getCell(63).value),
+                    jurisdiccion: normalizeValue(row.getCell(64).value),
+                    juzgado: { nombre: normalizeValue(row.getCell(64).value) },
+                    fechaUltimaActuacion: normalizeValue(row.getCell(65).value),
+                    tituloUltimaActuacion: normalizeValue(row.getCell(66).value)
                 };
 
                 rows.push(rowData);
@@ -131,6 +141,7 @@ export const Dashboard = () => {
             setLoader(true)
             const largo = rows.length-1
             setTotales(rows.length)
+            console.log(rows)
             for (let i = 0; i < rows.length; i++) {
 
                 

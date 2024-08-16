@@ -3,7 +3,6 @@ import './index.css'
 import { useState, useEffect } from 'react'
 import Axios from '../hooks/useAxios'
 import CaseForm from '../components/caseForm'
-import AOS from 'aos'
 import { useNavigate } from 'react-router-dom'
 import exportToExcel from '../hooks/useDescargarExcel'
 export const Home = () => {
@@ -14,13 +13,16 @@ export const Home = () => {
     const [cliente, setCliente] = useState('')
     const [area, setArea] = useState('')
     const [centroTrabajo, setCentroTrabajo] = useState('')
+    const [centroTrabajos, setCentroTrabajos] = useState('')
     const [abogado, setAbogado] = useState('')
+    const [abogadocs, setAbogadocs] = useState('')
     const [claseDeProceso, setClaseDeProceso] = useState('')
-    const [fechaInicio, setFechaInicio] = useState('')
+    const [claseDeProcesos, setClaseDeProcesos] = useState('')
+    const [ciudad, setCiudad] = useState('')
+    const [ciudades, setCiudades] = useState('')
     const [fechaFin, setFechaFin] = useState('')
     const [clientes, setClientes] = useState('')
     const [areas, setAreas] = useState([])
-    const [usuarios, setUsuarios] = useState([])
     const [isFormOpen, setIsFormOpen] = useState(false)
     const [caso, setCaso] = useState({})
     const [currentPage, setCurrentPage] = useState(1)
@@ -28,7 +30,6 @@ export const Home = () => {
     const [loader, setLoader] = useState(true)
     const navigate = useNavigate()
     useEffect(() => {
-        AOS.init();
         Axios('POST', 'login/validacion', null)
             .then((res) => {
                 console.log('se cargo el usuario 1 de 4')
@@ -41,9 +42,13 @@ export const Home = () => {
             .then((res) => {
                 const casosInverted = res.data.reverse(); // Invierte los datos aquí
                 setCasos(casosInverted);
-                console.log('se cargaron los casos 2 de 4')
-                setAreas(res.data)
-                cargarPersonalizado()
+                console.log(res.data)
+                setAreas(getUnique(res.data, 'area'))
+                setCentroTrabajos(getUnique(res.data, 'centroDeTrabajo'))
+                setClientes(getUnique(res.data, 'cliente'))
+                setAbogadocs(getUnique(res.data, 'abogadoACargo'))
+                setClaseDeProcesos(getUnique(res.data, 'claseDeProceso'))
+                setCiudades(getUnique(res.data, 'ciudad'))
                 setLoader(false)
             })
             .catch((err) => {
@@ -52,6 +57,28 @@ export const Home = () => {
 
 
     }, [])
+
+    const getUnique = (array, key) => {
+        return array.reduce((acc, item) => {
+            const value = item[key];
+            
+            // Si el valor es un objeto, compara por _id
+            if (typeof value === 'object' && value !== null) {
+                if (!acc.find(obj => obj._id === value._id)) {
+                    acc.push(value);
+                }
+            }
+            // Si el valor es una cadena, verifica directamente
+            else if (typeof value === 'string') {
+                if (!acc.includes(value)) {
+                    acc.push(value);
+                }
+            }
+            
+            return acc;
+        }, []);
+    };
+    
     const cargarPersonalizado = () => {
         Axios('GET', 'clientes/', null)
             .then((res) => {
@@ -61,14 +88,7 @@ export const Home = () => {
             .catch((err) => {
                 console.log(err)
             })
-        Axios('GET', 'usuarios/', null)
-            .then((res) => {
-                console.log('se cargaron los usuario 4 de 4')
-                setUsuarios(res.data)
-            })
-            .catch((err) => {
-                console.log(err, 'usuarios Faild')
-            })
+        
     }
     const indexOfLastCase = currentPage * casesPerPage
     const indexOfFirstCase = indexOfLastCase - casesPerPage
@@ -102,7 +122,7 @@ export const Home = () => {
             if (centroTrabajo) data.centroTrabajo = centroTrabajo;
             if (abogado) data.abogadoACargo = abogado;
             if (claseDeProceso) data.claseDeProceso = claseDeProceso;
-            if (fechaInicio) data.fechaInicio = fechaInicio;
+            if (ciudad) data.ciudad = ciudad;
             if (fechaFin) data.fechaDeTerminacion = fechaFin;
         }
         console.log(data)
@@ -185,7 +205,7 @@ export const Home = () => {
                                         <select value={area} onChange={(e) => setArea(e.target.value)}>
                                             <option value="">Seleccione...</option>
                                             {areas.map(are => (
-                                                <option key={are._id} value={are.area}>{are.area}</option>
+                                                <option key={are} value={are}>{are}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -193,8 +213,8 @@ export const Home = () => {
                                         <label>Centro de trabajo:</label>
                                         <select value={centroTrabajo} onChange={(e) => setCentroTrabajo(e.target.value)}>
                                             <option value="">Seleccione...</option>
-                                            {areas.map(are => (
-                                                <option key={are._id} value={are.centroDeTrabajo}>{are.centroDeTrabajo}</option>
+                                            {centroTrabajos.map(are => (
+                                                <option key={are} value={are}>{are}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -202,7 +222,7 @@ export const Home = () => {
                                         <label>Abogado a Cargo:</label>
                                         <select value={abogado} onChange={(e) => setAbogado(e.target.value)}>
                                             <option value="">Seleccione...</option>
-                                            {usuarios.map(usuario => (
+                                            {abogadocs.map(usuario => (
                                                 <option key={usuario._id} value={usuario._id}> {usuario.nombre}</option>
                                             ))}
                                         </select>
@@ -211,14 +231,19 @@ export const Home = () => {
                                         <label>Clase de Proceso:</label>
                                         <select value={claseDeProceso} onChange={(e) => setClaseDeProceso(e.target.value)}>
                                             <option value="">Seleccione...</option>
-                                            {areas.map(are => (
-                                                <option key={are._id} value={are.claseDeProceso}>{are.claseDeProceso}</option>
+                                            {claseDeProcesos.map(are => (
+                                                <option key={are} value={are}>{are}</option>
                                             ))}
                                         </select>
                                     </div>
                                     <div className="form-row">
-                                        <label>Fecha de Inicio:</label>
-                                        <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} />
+                                        <label>Ciudad</label>
+                                        <select value={ciudad} onChange={(e) => setCiudad(e.target.value)}>
+                                            <option value="">Seleccione...</option>
+                                            {ciudades.map(are => (
+                                                <option key={are} value={are}>{are}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                     <div className="form-row">
                                         <label>Fecha de terminacion:</label>
@@ -248,12 +273,12 @@ export const Home = () => {
                                         <tbody>
                                             {currentCases.map((caso, index) => (
                                                 <tr key={index}>
-                                                    <td>{indexOfFirstCase + index + 1}</td>
-                                                    <td>{caso.codigo}</td>
-                                                    <td>{caso.titulo}</td>
-                                                    <td>{caso.cliente.nombre}</td>
-                                                    <td>{caso.estado}</td>
-                                                    <td>{caso.juzgado.nombre}</td>
+                                                    <td>{caso.numero ? caso.numero : 'No disponible'}</td>
+                                                    <td>{caso.titulo ? caso.titulo : 'No disponible'}</td>
+                                                    <td>{caso.cliente.nombre ? caso.cliente.nombre : 'No disponible'}</td>
+                                                    <td>{caso.area ?  caso.area : 'No disponible'}</td>
+                                                    <td>{caso.centroDeTrabajo ? caso.centroDeTrabajo : 'No disponible'}</td>
+                                                    <td>{caso.abogadoACargo.nombre ? caso.abogadoACargo.nombre : 'No disponible'}</td>
                                                     <td>
                                                         <div className='conten-btn'>
                                                             <button className='btn-g' onClick={() => openForm(caso)}><svg xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-eye" width="20" height="20" viewBox="0 0 24 24" strokeWidth="1.5" stroke="#00bfd8" fill="none" strokeLinecap="round" strokeLinejoin="round">
