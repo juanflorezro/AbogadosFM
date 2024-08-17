@@ -5,6 +5,7 @@ import Axios from '../hooks/useAxios'
 import CaseForm from '../components/caseForm'
 import { useNavigate } from 'react-router-dom'
 import exportToExcel from '../hooks/useDescargarExcel'
+import useDebounce from '../hooks/useDebounce'
 export const Home = () => {
     const [user, setUser] = useState('')
     const [casos, setCasos] = useState([])
@@ -28,16 +29,9 @@ export const Home = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const casesPerPage = 5
     const [loader, setLoader] = useState(true)
+    const debouncedProceso = useDebounce(proceso, 600)
     const navigate = useNavigate()
     useEffect(() => {
-        Axios('POST', 'login/validacion', null)
-            .then((res) => {
-                console.log('se cargo el usuario 1 de 4')
-                setUser(res.data.user.usuario)
-            })
-            .catch(err => {
-                console.log(err.response.data)
-            })
         Axios('GET', 'casos/', null)
             .then((res) => {
                 const casosInverted = res.data.reverse(); // Invierte los datos aquí
@@ -54,10 +48,12 @@ export const Home = () => {
             .catch((err) => {
                 console.log(err)
             })
-
-
     }, [])
-
+    useEffect(() => {
+        if (debouncedProceso) {
+            handleSearch();
+        }
+    }, [debouncedProceso]);
     const getUnique = (array, key) => {
         return array.reduce((acc, item) => {
             const value = item[key];
