@@ -61,7 +61,7 @@ export const Home = () => {
     const getUnique = (array, key) => {
         return array.reduce((acc, item) => {
             const value = item[key];
-            
+
             // Si el valor es un objeto, compara por _id
             if (typeof value === 'object' && value !== null) {
                 if (!acc.find(obj => obj._id === value._id)) {
@@ -74,11 +74,11 @@ export const Home = () => {
                     acc.push(value);
                 }
             }
-            
+
             return acc;
         }, []);
     };
-    
+
     const cargarPersonalizado = () => {
         Axios('GET', 'clientes/', null)
             .then((res) => {
@@ -88,7 +88,7 @@ export const Home = () => {
             .catch((err) => {
                 console.log(err)
             })
-        
+
     }
     const indexOfLastCase = currentPage * casesPerPage
     const indexOfFirstCase = indexOfLastCase - casesPerPage
@@ -114,7 +114,7 @@ export const Home = () => {
     const handleSearch = () => {
         setLoader(true)
         let data = {}
-        if (proceso) data.titulo = proceso
+
 
         if (filtrar) {
             if (cliente) data.cliente = cliente;
@@ -124,30 +124,54 @@ export const Home = () => {
             if (claseDeProceso) data.claseDeProceso = claseDeProceso;
             if (ciudad) data.ciudad = ciudad;
             if (fechaFin) data.fechaDeTerminacion = fechaFin;
+
+            Axios('POST', 'casos/caso', data)
+                .then((res) => {
+                    setCasos(res.data)
+                    cargarPersonalizado()
+                    setLoader(false)
+                })
+                .catch((err) => {
+                    console.log('Error al enviar:', err.response.data)
+                    if (err.response.data.message == 'Acceso Denegado') {
+                        navigate('/')
+                        Swal.fire({
+                            title: "Acceso Restringido (Token Vencido - Invalido), Inicie Sesión",
+                            text: err.response.data.message,
+                            icon: "warning"
+                        })
+                    }
+                })
+        } else {
+
+            Axios('POST', 'casos/casoAll', proceso)
+                .then((res) => {
+                    setCasos(res.data)
+                    console.log(res.data)
+                    cargarPersonalizado()
+                    setLoader(false)
+                })
+                .catch((err) => {
+                    console.log('Error al enviar:', err.response.data)
+                    if (err.response.data.message == 'Acceso Denegado') {
+                        navigate('/')
+                        Swal.fire({
+                            title: "Acceso Restringido (Token Vencido - Invalido), Inicie Sesión",
+                            text: err.response.data.message,
+                            icon: "warning"
+                        })
+                    }
+                })
+
         }
         console.log(data)
-        Axios('POST', 'casos/caso', data)
-            .then((res) => {
-                setCasos(res.data)
-                cargarPersonalizado()
-                setLoader(false)
-            })
-            .catch((err) => {
-                console.log('Error al enviar:', err.response.data)
-                if (err.response.data.message == 'Acceso Denegado') {
-                    navigate('/')
-                    Swal.fire({
-                        title: "Acceso Restringido (Token Vencido - Invalido), Inicie Sesión",
-                        text: err.response.data.message,
-                        icon: "warning"
-                    })
-                }
-            })
+
     }
     const openForm = (casoV) => {
         setCaso(casoV)
         setIsFormOpen(true)
     }
+
     const closeForm = () => {
         setIsFormOpen(false);
     }
@@ -171,7 +195,7 @@ export const Home = () => {
                         <div className="search-container">
                             <input
                                 type="text"
-                                placeholder="Buscar Procesos"
+                                placeholder="Buscar coincidencias..."
                                 className="search-bar"
                                 value={proceso}
                                 onChange={(e) => setProceso(e.target.value)}
@@ -276,7 +300,7 @@ export const Home = () => {
                                                     <td>{caso.numero ? caso.numero : 'No disponible'}</td>
                                                     <td>{caso.titulo ? caso.titulo : 'No disponible'}</td>
                                                     <td>{caso.cliente.nombre ? caso.cliente.nombre : 'No disponible'}</td>
-                                                    <td>{caso.area ?  caso.area : 'No disponible'}</td>
+                                                    <td>{caso.area ? caso.area : 'No disponible'}</td>
                                                     <td>{caso.centroDeTrabajo ? caso.centroDeTrabajo : 'No disponible'}</td>
                                                     <td>{caso.abogadoACargo.nombre ? caso.abogadoACargo.nombre : 'No disponible'}</td>
                                                     <td>
