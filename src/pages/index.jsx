@@ -58,7 +58,6 @@ export const Home = () => {
             .then((res) => {
                 const casosInverted = res.data.reverse(); // Invierte los datos aquí
                 setCasos(casosInverted);
-                console.log(res.data)
                 setAreas(getUnique(res.data, 'area'))
                 setCentroTrabajos(getUnique(res.data, 'centroDeTrabajo'))
                 setClientes(getUnique(res.data, 'cliente'))
@@ -153,7 +152,6 @@ export const Home = () => {
                 .then((res) => {
                     
                     setCasos(res.data)
-                    console.log(res.data)
                     setLoader(false)
                 })
                 .catch((err) => {
@@ -169,7 +167,6 @@ export const Home = () => {
                 })
 
         }
-        console.log(data)
 
     }
     const openForm = (casoV) => {
@@ -185,7 +182,7 @@ export const Home = () => {
             <div>
                 <Navigation />
                 {isFormOpen ? (
-                    <CaseForm caseData={caso} cerrar={closeForm} user={user} />
+                    <CaseForm caseData={caso} cerrar={closeForm} user={user}  casos ={casos}  setCasos = {setCasos}/>
                 ) : (
                     <div className="containerp">
 

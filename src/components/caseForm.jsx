@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import './caseForm.css'; // Estilos CSS externos
-
-const CaseForm = ({ caseData, cerrar, user }) => {
+import Axios from '../hooks/useAxios'
+import { useNavigate } from 'react-router-dom';
+const CaseForm = ({ caseData, cerrar, user, casos, setCasos }) => {
     const [formData, setFormData] = useState(caseData || {});
     const [userd, setUserd] = useState(user);
-    console.log(user);
+    const navigate = useNavigate()
 
     // Función para obtener el valor del campo o un mensaje predeterminado
     const getFieldValue = (field) => {
@@ -15,6 +16,50 @@ const CaseForm = ({ caseData, cerrar, user }) => {
     const getNestedFieldValue = (field, nestedField) => {
         return formData[field] && formData[field][nestedField] ? formData[field][nestedField] : 'No disponible';
     };
+
+    const eliminarCaso = (casoId) => {
+        try {
+            Axios('DELETE', `casos/eliminar/${casoId}`)
+                .then(res => {
+                    console.log('caso eliminado', res)
+                    Swal.fire({
+                        title: "Caso Eliminado Con Exito",
+                        text: res.data._id,
+                        icon: "success"
+                    })
+                    const casosActualizados = casos.filter(caso => caso._id !== casoId)
+                    setCasos(casosActualizados)
+                    cerrar()
+                })
+                .catch(err => {
+                    console.log(err, 'problemas')
+                    if (err.response.data.message == 'Acceso Denegado') {
+                        navigate('/')
+                        Swal.fire({
+                            title: "Acceso Restringido (Token Vencido - Invalido), Inicie Sesión",
+                            text: err.response.data.message,
+                            icon: "warning"
+                        })
+                    }else{
+                        Swal.fire({
+                            title: "Caso No Eliminado",
+                            text: '',
+                            icon: "error"
+                        })
+                    }
+                   
+                })
+        } catch (error) {
+            console.log(error, 'problemas al eliminar el caso')
+            Swal.fire({
+                title: "Caso No Eliminado",
+                text: error,
+                icon: "error"
+            })
+        }
+
+
+    }
 
     return (
         <div className='conte'>
@@ -30,7 +75,7 @@ const CaseForm = ({ caseData, cerrar, user }) => {
                     </button>
                     {user === 'admin' && (
                         <>
-                            <button className='cerrar'>
+                            <button onClick={() => eliminarCaso(formData._id)} className='cerrar'>
                                 <svg xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-trash" width="24" height="24" viewBox="0 0 24 24" strokeWidth="1.5" stroke="#00bfd8" fill="none" strokeLinecap="round" strokeLinejoin="round">
                                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                     <path d="M4 7l16 0" />
@@ -144,7 +189,7 @@ const CaseForm = ({ caseData, cerrar, user }) => {
                         <label htmlFor="juzgadoInt">JUZGADO INT</label>
                         <label htmlFor="juzgadoInt">{getNestedFieldValue('juzgadoInt', 'nombre')}</label>
                     </div>
-                    
+
                     <div className="form-group">
                         <label htmlFor="radicado">RADICADO</label>
                     </div>
@@ -358,7 +403,7 @@ const CaseForm = ({ caseData, cerrar, user }) => {
                         <label htmlFor="jurisdiccion0">Jurisdicción</label>
                         <label htmlFor="jurisdiccion0">{getFieldValue('jurisdiccion0')}</label>
                     </div>
-                    
+
                     <div className="form-group">
                         <label htmlFor="juzgado">Juzgado</label>
                         <label htmlFor="juzgado">{getNestedFieldValue('juzgado', 'nombre')}</label>
