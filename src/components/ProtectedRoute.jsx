@@ -10,9 +10,11 @@ const ProtectedRoute = () => {
       },[])
     const tokenA = () => {
         Axios('POST', 'login/validacion', null)
-            .then(() => {
+            .then((res) => {
                 navigate('/home')
                 console.log('el usuario esta validado')
+                localStorage.setItem('usuario',res.data.user.usuario);
+                console.log('Valor guardado en localStorage:', localStorage.getItem('usuario'));
             })
             .catch(err => {
                 navigate('/')

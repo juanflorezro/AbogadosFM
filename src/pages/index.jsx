@@ -27,7 +27,7 @@ export const Home = () => {
         'departamento', 'asegurado', 'jurisdiccion', 'juzgado.nombre', 'fechaUltimaActuacion',
         'tituloUltimaActuacion'
     ];
-    const [user, setUser] = useState('')
+    const [user, setUser] = useState(localStorage.getItem('usuario'))
     const [casos, setCasos] = useState([])
     const [filtrar, setFiltrar] = useState(false)
     const [proceso, setProceso] = useState('')
@@ -54,14 +54,6 @@ export const Home = () => {
     const [mostrar , setMostrar]= useState([])
     const navigate = useNavigate()
     useEffect(() => {
-        Axios('POST', 'login/validacion', null)
-            .then((res) => {
-                console.log('se cargo el usuario 1 de 4')
-                setUser(res.data.user.usuario)
-            })
-            .catch(err => {
-                console.log(err.response.data)
-            })
         Axios('GET', 'casos/', null)
             .then((res) => {
                 const casosInverted = res.data.reverse(); // Invierte los datos aquí
