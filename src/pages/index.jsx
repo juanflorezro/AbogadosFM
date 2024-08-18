@@ -65,6 +65,7 @@ export const Home = () => {
                 setClaseDeProcesos(getUnique(res.data, 'claseDeProceso'))
                 setCiudades(getUnique(res.data, 'ciudad'))
                 setLoader(false)
+                console.log(res.data)
             })
             .catch((err) => {
                 console.log(err)
@@ -182,7 +183,7 @@ export const Home = () => {
             <div>
                 <Navigation />
                 {isFormOpen ? (
-                    <CaseForm caseData={caso} cerrar={closeForm} user={user}  casos ={casos}  setCasos = {setCasos}/>
+                    <CaseForm caseData={caso}  setCaso = {setCaso} cerrar={closeForm} user={user}  casos ={casos}  setCasos = {setCasos}/>
                 ) : (
                     <div className="containerp">
 
