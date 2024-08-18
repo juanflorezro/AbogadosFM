@@ -6,7 +6,27 @@ import CaseForm from '../components/caseForm'
 import { useNavigate } from 'react-router-dom'
 import exportToExcel from '../hooks/useDescargarExcel'
 import useDebounce from '../hooks/useDebounce'
+import FieldSelectorModal from '../components/modal'
 export const Home = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedFields, setSelectedFields] = useState([]);
+    const allFields = [
+        'numero', 'codigo', 'titulo', 'cliente.nombre', 'asunto', 'area', 'fechaDeAsignacion',
+        'centroDeTrabajo', 'directorACargo.nombre', 'abogadoACargo.nombre', 'abogadoInternoDeLaCompania.nombre',
+        'siniestro.numero', 'fechaSiniestro', 'poliza', 'ramo', 'amparo', 'numeroAplicativo', 'ciudad',
+        'juzgadoInt.nombre', 'radicado', 'parteActiva', 'partePasiva', 'tipoDeTramite', 'claseDeProceso',
+        'tipoDeVinculacionCliente', 'pretensionesEnDinero', 'calificacionInicialContingencia',
+        'calificacionActualContingencia', 'motivoDeLaCalificacion', 'fechaAdmisionVinculacion',
+        'fechaDeNotificacion', 'instancia', 'etapaProcesal', 'claseDeMedidaCautelar', 'honorariosAsignados',
+        'autoridadDeConocimiento', 'delito', 'placa', 'evento', 'probabilidadDeExito', 'valorIndemnizadoCliente',
+        'entidadAfectada', 'fechaDePagoCliente', 'tipoContragarantia', 'montoDeProvision', 'tipoDeMoneda',
+        'fechaDeTerminacion', 'motivoDeTerminacion', 'cliente2', 'fechaDeAsignacion2',
+        'abogadoInternoDeLaCompania2', 'siniestro2.numero', 'numeroDeAplicativo2', 'fechaDeNotificacion2',
+        'seInicioEjecutivoAContinuacionDeOrdinario', 'honorariosAsignados2', 'valorPagado',
+        'personaQueRealizoElPago', 'fechaDeRadicacionDeLaContestacion', 'fechaDeRadicacionDeLaContestacion2',
+        'departamento', 'asegurado', 'jurisdiccion', 'juzgado.nombre', 'fechaUltimaActuacion',
+        'tituloUltimaActuacion'
+    ];
     const [user, setUser] = useState('')
     const [casos, setCasos] = useState([])
     const [filtrar, setFiltrar] = useState(false)
@@ -30,8 +50,18 @@ export const Home = () => {
     const casesPerPage = 5
     const [loader, setLoader] = useState(true)
     const debouncedProceso = useDebounce(proceso, 600)
+    const [cuantos, setCuantos] = useState(null)
+    const [mostrar , setMostrar]= useState([])
     const navigate = useNavigate()
     useEffect(() => {
+        Axios('POST', 'login/validacion', null)
+            .then((res) => {
+                console.log('se cargo el usuario 1 de 4')
+                setUser(res.data.user.usuario)
+            })
+            .catch(err => {
+                console.log(err.response.data)
+            })
         Axios('GET', 'casos/', null)
             .then((res) => {
                 const casosInverted = res.data.reverse(); // Invierte los datos aquí
@@ -73,18 +103,6 @@ export const Home = () => {
 
             return acc;
         }, []);
-    };
-
-    const cargarPersonalizado = () => {
-        Axios('GET', 'clientes/', null)
-            .then((res) => {
-                console.log('se cargaron los clientes 3 de 4')
-                setClientes(res.data)
-            })
-            .catch((err) => {
-                console.log(err)
-            })
-
     }
     const indexOfLastCase = currentPage * casesPerPage
     const indexOfFirstCase = indexOfLastCase - casesPerPage
@@ -124,7 +142,6 @@ export const Home = () => {
             Axios('POST', 'casos/caso', data)
                 .then((res) => {
                     setCasos(res.data)
-                    cargarPersonalizado()
                     setLoader(false)
                 })
                 .catch((err) => {
@@ -142,9 +159,9 @@ export const Home = () => {
 
             Axios('POST', 'casos/casoAll', proceso)
                 .then((res) => {
+                    
                     setCasos(res.data)
                     console.log(res.data)
-                    cargarPersonalizado()
                     setLoader(false)
                 })
                 .catch((err) => {
@@ -171,14 +188,6 @@ export const Home = () => {
     const closeForm = () => {
         setIsFormOpen(false);
     }
-
-
-
-
-    const exportToExcelas = (casos) => {
-        exportToExcel(casos)
-    }
-
     return (
         <>
             <div>
@@ -204,8 +213,22 @@ export const Home = () => {
                                     onChange={handleCheckboxChange}
                                 />
                             </label>
+                            <div>
+                                <FieldSelectorModal
+                                    isOpen={isModalOpen}
+                                    onRequestClose={() => setIsModalOpen(false)}
+                                    fields={allFields}
+                                    onSelectFields={setSelectedFields}
+                                    casos={casos}
+                                    mostrar = {mostrar}
+                                    cuantos={cuantos}
+                                />
+                            </div>
                             <button className="search-button" onClick={handleSearch}>Buscar</button>
-                            <button onClick={() => exportToExcelas(casos)} className="excel-button">Descargar Excel</button>
+                            <button onClick={() => {
+                                setIsModalOpen(true)
+                                setCuantos(true)
+                            }} className="excel-button">Descargar Excel</button>
                         </div>
                         {filtrar && (
                             <div id="custom-filter-container" className="custom-filter-container">
@@ -306,12 +329,16 @@ export const Home = () => {
                                                                 <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
                                                                 <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
                                                             </svg></button>
-                                                            <button className='btn-g' onClick={() => exportToExcel([caso])}><svg xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-download" width="20" height="20" viewBox="0 0 24 24" strokeWidth="1.5" stroke="#00bfd8" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-                                                                <path d="M7 11l5 5l5 -5" />
-                                                                <path d="M12 4l0 12" />
-                                                            </svg></button>
+                                                            <button className='btn-g' onClick={() => {
+                                                                setIsModalOpen(true)
+                                                                setCuantos(false)
+                                                                setMostrar([caso])
+                                                            }}><svg xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-download" width="20" height="20" viewBox="0 0 24 24" strokeWidth="1.5" stroke="#00bfd8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                                                                    <path d="M7 11l5 5l5 -5" />
+                                                                    <path d="M12 4l0 12" />
+                                                                </svg></button>
                                                         </div>
                                                     </td>
                                                 </tr>

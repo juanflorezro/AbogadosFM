@@ -1,4 +1,6 @@
+
 import Navigation from '../navigation'
+import './dash.css';
 import ExcelJS from 'exceljs'
 import Axios from '../hooks/useAxios'
 import { useState } from 'react';
@@ -6,37 +8,64 @@ export const Dashboard = () => {
     const [file, setFile] = useState(null);
     const [loader, setLoader] = useState(false)
     const [porcentaje, setPorcentaje] = useState(0)
-    const [totales, setTotales] =useState(0)
+    const [totales, setTotales] = useState(0)
     const [valor, setValor] = useState(0)
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
+        e.target.value = null;
     };
-
     const handleImport = async () => {
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = async (e) => {
             const buffer = e.target.result;
             const workbook = new ExcelJS.Workbook();
+            if (!buffer) {
+                console.error('Buffer is undefined or null');
+                Swal.fire({
+                    title: "¡Atención!",
+                    text: "Verifique en el archivo que desea importar, contenga información y este bien estructurado",
+                    icon: "warning"
+                })
+                setPorcentaje(0)
+                setValor(0)
+                setTotales(0)
+                setFile(false)
+                return;
+            }
             try {
                 await workbook.xlsx.load(buffer);
             } catch (error) {
                 console.error('Error loading workbook:', error);
+                Swal.fire({
+                    title: "¡Atención!",
+                    text: "No se pudo cargar el archivo. Verifica que sea un archivo Excel válido.",
+                    icon: "warning"
+                })
+                setPorcentaje(0)
+                setValor(0)
+                setTotales(0)
+                setFile(false)
                 return;
             }
+
             await workbook.xlsx.load(buffer);
-            if (!buffer) {
-                console.error('Buffer is undefined or null');
-                return;
-            }
+
             const worksheet = workbook.getWorksheet('Procesos'); // Asegúrate que el nombre coincida con la hoja en Excel
             const rows = [];
             if (!worksheet) {
                 console.error('Worksheet not found!');
+                Swal.fire({
+                    title: "¡Atención!",
+                    text: "Verifique en el archivo que desea importar, la hoja de excel se llame Literelmante 'Procesos'",
+                    icon: "warning"
+                })
+                setPorcentaje(0)
+                setValor(0)
+                setTotales(0)
+                setFile(false)
                 return;
             }
-
             worksheet.eachRow((row, rowNumber) => {
                 if (rowNumber === 1) return; // Saltar la fila de encabezados
                 const isValidDate = (date) => {
@@ -44,7 +73,6 @@ export const Dashboard = () => {
                     const parsedDate = new Date(date);
                     return !isNaN(parsedDate.getTime()); // Devuelve true si la fecha es válida
                 };
-                
                 const parseDate = (dateStr) => {
                     if (typeof dateStr === 'string') { // Verifica si dateStr es una cadena
                         const [day, month, year] = dateStr.split('/');
@@ -55,16 +83,13 @@ export const Dashboard = () => {
                     }
                     return null; // Si no se puede parsear, devolvemos null
                 };
-                
                 const normalizeValue = (value) => {
                     if (value === "" || value === "N/A") return null; // Devolvemos null para valores vacíos o "N/A"
-                    
                     // Intentar convertir a fecha si es una cadena de fecha
                     const parsedDate = parseDate(value);
                     if (parsedDate && isValidDate(parsedDate)) {
                         return parsedDate; // Devolver objeto Date si la fecha es válida
                     }
-                    
                     return value; // Devolver el valor original si no es una fecha válida
                 };
                 const rowData = {
@@ -135,35 +160,46 @@ export const Dashboard = () => {
                     fechaUltimaActuacion: normalizeValue(row.getCell(65).value),
                     tituloUltimaActuacion: normalizeValue(row.getCell(66).value)
                 };
-
                 rows.push(rowData);
             });
-            setLoader(true)
-            const largo = rows.length-1
+           
+            const largo = rows.length - 1
             setTotales(rows.length)
             console.log(rows)
+            if (rows.length < 1) {
+                console.error('No data found in the worksheet!');
+                Swal.fire({
+                    title: "¡Atención!",
+                    text: "El archivo Excel no contiene datos. Asegúrate de que la hoja de Excel llamada 'Procesos' tenga información.",
+                    icon: "warning"
+                });
+                setPorcentaje(0);
+                setValor(0);
+                setTotales(0);
+                setFile(false);
+                return;
+            }
+            setLoader(true)
             for (let i = 0; i < rows.length; i++) {
-
-                
                 try {
-                    const res = await Axios('POST','casos/crear', rows[i]);
+                    const res = await Axios('POST', 'casos/crear', rows[i]);
                     console.log(`Caso ${i + 1} agregado:`, res.data);
-                    setPorcentaje(((i+1)/(largo+1))*100)
-                    
-                    setValor(i+1)
-                    if(i==largo){
+                    setPorcentaje(((i + 1) / (largo + 1)) * 100)
+                    setValor(i + 1)
+                    if (i == largo) {
                         Swal.fire({
-                            title: "Datos agregados Correctamente",
+                            title: "Importación Finalizada",
                             text: "Listo",
                             icon: "success"
                         })
                         setPorcentaje(0)
                         setValor(0)
                         setTotales(0)
-                        setFile(null)
+                        setFile(false)
+
+
                     }
                     // Puedes mostrar una notificación por cada caso
-                   
                 } catch (err) {
                     console.error(`Error al agregar caso ${i + 1}:`, err);
                     // Puedes manejar errores individuales aquí
@@ -173,35 +209,47 @@ export const Dashboard = () => {
                         icon: "error"
                     });
                 }
-                if(i==largo) setLoader(false)
+                if (i == largo) setLoader(false)
             }
         };
-
         reader.readAsArrayBuffer(file);
     };
     return (
-        <>
-            <div>
-                <Navigation />
-
-                <div>
-                    <input type="file" accept=".xlsx" onChange={handleFileChange} />
-                    {file && (
-                        <>
-                            {loader ? (
-                                <div className="loader-container">
-                                    <div className="loader"></div> 
-                                </div>
-                            ) : (
-                                <button onClick={handleImport}>Importar</button>
-                            )}
-                        </>
-                    )}
-
+        <div className="dashboard-container">
+            <Navigation />
+            <div className="upload-container">
+                <div className="upload-box">
+                    <input id="file-upload" type="file" accept=".xlsx" onChange={handleFileChange} />
+                    <label htmlFor="file-upload" className="upload-label">
+                        <div className="upload-icon">⬆️</div>
+                        {file ? (
+                            <>
+                                <p className="upload-text">Archivo Cargado</p>
+                            </>
+                        ) : (
+                            <p className="upload-text">Arrastra y suelta archivos de excel</p>
+                        )}
+                        {file && (
+                            <>
+                                {loader ? (
+                                    <div className="loader-container">
+                                        <div className="loader"></div>
+                                    </div>
+                                ) : (
+                                    <button onClick={handleImport} className='select-file-btn'>Importar</button>
+                                )}
+                            </>
+                        )}
+                    </label>
 
                 </div>
-                <progress id="file" max={totales} value={valor}></progress><div>{porcentaje}%</div>
             </div>
-        </>
-    )
-} 
+            {file && (
+                <>
+                    <progress id="file" max={totales} value={valor}></progress>
+                    <div className="progress-text">{porcentaje}%</div>
+                </>
+            )}
+        </div>
+    );
+};
