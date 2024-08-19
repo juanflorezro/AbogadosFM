@@ -86,10 +86,7 @@ export const Dashboard = () => {
                 const normalizeValue = (value) => {
                     if (value === "" || value === "N/A") return null; // Devolvemos null para valores vacíos o "N/A"
                     // Intentar convertir a fecha si es una cadena de fecha
-                    const parsedDate = parseDate(value);
-                    if (parsedDate && isValidDate(parsedDate)) {
-                        return parsedDate; // Devolver objeto Date si la fecha es válida
-                    }
+                    
                     return value; // Devolver el valor original si no es una fecha válida
                 };
                 const rowData = {
