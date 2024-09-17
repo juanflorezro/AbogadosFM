@@ -1,14 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './caseForm.css'; // Estilos CSS externos
 import Axios from '../hooks/useAxios'
 import { useNavigate } from 'react-router-dom';
 import Comentarios from './comentarios';
-const CaseForm = ({ caseData, setCaso, cerrar, user, casos, setCasos }) => {
-    const [formData, setFormData] = useState(caseData || {});
-    const [userd, setUserd] = useState(user);
+const CaseForm = ({ caseId, setCaso, cerrar, user, casos, setCasos }) => {
+    const [formData, setFormData] = useState({});
+    const [loader, setloader] = useState(false)
+
+
     const [mostrarComentarios, setMostrarComentarios] = useState(false)
     const navigate = useNavigate()
-
+    useEffect(() => {
+        setloader(true)
+        Axios('GET', `casos/${caseId._id}`, null)
+            .then(res => {
+                setFormData(res.data.caso)
+                setloader(false)
+            })
+            .catch(err => {
+                console.log(err)
+                setloader(false)
+            })
+    }, [])
     // Función para obtener el valor del campo o un mensaje predeterminado
     const getFieldValue = (field) => {
         return formData[field] ? formData[field] : 'No disponible';
@@ -65,6 +78,7 @@ const CaseForm = ({ caseData, setCaso, cerrar, user, casos, setCasos }) => {
 
     return (
         <div className='conte'>
+
             <div className="form-container">
                 <div>
                     <button className='cerrar' onClick={() => cerrar()}>
@@ -116,7 +130,16 @@ const CaseForm = ({ caseData, setCaso, cerrar, user, casos, setCasos }) => {
                 </div>
                 {
 
-                    mostrarComentarios && (<Comentarios caso={caseData} setCaso = {setCaso} setCasos={setCasos} />)
+                    mostrarComentarios && (<Comentarios caso={formData} setCaso={setCaso} setCasos={setCasos} casos = {casos}/>)
+                }
+                {
+                    loader && (
+                        <td colSpan="7">
+                            <div className="loader-container">
+                                <span className="loader"></span>
+                            </div>
+                        </td>
+                    )
                 }
                 <h1 className="form-title">INFORMACION DEL CASO</h1>
                 <br />
