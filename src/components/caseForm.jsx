@@ -130,15 +130,15 @@ const CaseForm = ({ caseId, setCaso, cerrar, user, casos, setCasos }) => {
                 </div>
                 {
 
-                    mostrarComentarios && (<Comentarios caso={formData} setCaso={setCaso} setCasos={setCasos} casos = {casos}/>)
+                    mostrarComentarios && (<Comentarios caso={formData} setCaso={setCaso} setCasos={setCasos} casos={casos} />)
                 }
                 {
                     loader && (
-                        <td colSpan="7">
-                            <div className="loader-container">
-                                <span className="loader"></span>
-                            </div>
-                        </td>
+
+                        <div className="loader-container">
+                            <span className="loader"></span>
+                        </div>
+
                     )
                 }
                 <h1 className="form-title">INFORMACION DEL CASO</h1>
