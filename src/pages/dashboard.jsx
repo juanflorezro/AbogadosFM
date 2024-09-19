@@ -26,6 +26,10 @@ export const Dashboard = () => {
         formData.append('file', file);
         console.log('entrando')
         setLoader(true)
+        setCorrectos(0)
+        setIncorrectos(0)
+        setValor(0)
+        setPorcentaje(0)
         Axios('POSTFILE', 'casos/agregarexcel', formData)
             .then(res => {
                 let numeroCasos = ''
@@ -44,44 +48,49 @@ export const Dashboard = () => {
                     confirmButtonText: "Ingresas Casos",
                     denyButtonText: `Mas Información`
                 }).then(async (result) => {
-                    let casoGuardado = ''
-                    if (result.isConfirmed) {
-                        setTotales(res.data.casos.length)
-                        
-                        
-                        setLoader(true)
-                        for (let index = 0; index < res.data.casos.length; index++) {
-                            setValor(index + 1)
-                            setPorcentaje(((index + 1) / res.data.casos.length) * 100)
-                            await Axios('POST', 'casos/crear', res.data.casos[index])
-                            .then(res =>{
-                                casoGuardado= casoGuardado + ' | ' + res.data.numero
-                                console.log(res.data)
-                                setCorrectos(correctos + 1)
-                            })
-                            .catch(err => {
-                                console.log(err)
-                                setIncorrectos(incorrectos + 1)
-                            })
-                            if(index==(res.data.casos.length-1)){
-                                setLoader(false)
-                            } 
-                        }
-                            
-                    }else if (result.isDenied) {
-                        window.location.href = '/mas-informacion.html'
-                        
-                    }
-                })
-                setLoader(false)
+    let casoGuardado = ''
+    if (result.isConfirmed) {
+        setTotales(res.data.casos.length);
+        setLoader(true);
+
+        // Usamos un bucle for..of con async/await para manejar las promesas secuencialmente
+        for (let index = 0; index < res.data.casos.length; index++) {
+            try {
+                
+
+                // Espera a que la llamada Axios se complete antes de continuar
+                const response = await Axios('POST', 'casos/crear', res.data.casos[index]);
+                casoGuardado += ' | ' + response.data.numero;
+                console.log(response.data);
+                setValor(index + 1);
+                setPorcentaje(((index + 1) / res.data.casos.length) * 100);
+                // Actualiza el estado de correctos
+                setCorrectos((prevCorrectos) => prevCorrectos + 1);
+            } catch (err) {
+                console.log(err);
+
+                // Actualiza el estado de incorrectos
+                setIncorrectos((prevIncorrectos) => prevIncorrectos + 1);
+            }
+        }
+
+        // Desactiva el loader después de que todas las operaciones hayan terminado
+        setLoader(false);
+
+    } else if (result.isDenied) {
+        window.location.href = '/mas-informacion.html'
+
+    }
+})
+setLoader(false)
             })
-            .catch(err => {
-                console.log(err)
-                setLoader(false)
-                Swal.fire({
-                    title: "<strong>Verifica la hoja de Excel</strong>",
-                    icon: "warning",
-                    html: `
+            .catch (err => {
+    console.log(err)
+    setLoader(false)
+    Swal.fire({
+        title: "<strong>Verifica la hoja de Excel</strong>",
+        icon: "warning",
+        html: `
                         <div style="display: flex; align-items: center; justify-content: center; flex-direction: column;">
                             <p style="font-size: 16px; color: #333; text-align: center;">
                                 
@@ -104,91 +113,91 @@ export const Dashboard = () => {
                             </a>
                         </div>
                     `,
-                    showCloseButton: true,
-                    showCancelButton: false,
-                    focusConfirm: false,
-                    confirmButtonText: 'Entendido',
-                });
+        showCloseButton: true,
+        showCancelButton: false,
+        focusConfirm: false,
+        confirmButtonText: 'Entendido',
+    });
 
-            })
+})
     };
 
-    // Maneja el arrastre del archivo sobre el contenedor
-    const handleDragOver = (e) => {
-        e.preventDefault();
-        setDragging(true);
-    };
+// Maneja el arrastre del archivo sobre el contenedor
+const handleDragOver = (e) => {
+    e.preventDefault();
+    setDragging(true);
+};
 
-    // Cuando el archivo sale del área de arrastre
-    const handleDragLeave = () => {
-        setDragging(false);
-    };
+// Cuando el archivo sale del área de arrastre
+const handleDragLeave = () => {
+    setDragging(false);
+};
 
-    // Maneja el evento cuando se suelta el archivo en el contenedor
-    const handleDrop = (e) => {
-        e.preventDefault();
-        setDragging(false);
-        const droppedFile = e.dataTransfer.files[0];
-        setFile(droppedFile);
-    };
+// Maneja el evento cuando se suelta el archivo en el contenedor
+const handleDrop = (e) => {
+    e.preventDefault();
+    setDragging(false);
+    const droppedFile = e.dataTransfer.files[0];
+    setFile(droppedFile);
+};
 
-    return (
-        <div className="dashboard-container">
-            <Navigation />
-            <div
-                className={`upload-container ${dragging ? 'dragging' : ''}`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-            >
-                <div className="upload-box">
-                    <label htmlFor="file-upload" className="upload-label">
-                        <input
-                            id="file-upload"
-                            type="file"
-                            accept=".xlsx"
-                            onChange={handleFileChange}
-                        />
-                        <div className="upload-icon">⬆️</div>
-                        {file ? (
-                            <p className="upload-text">Archivo Cargado: {file.name}</p>
-                        ) : (
-                            <p className="upload-text">
-                                Arrastra y suelta archivos de excel
-                            </p>
-                        )}
-                        {file && (
-                            <>
-                                {loader ? (
-                                    <>
+return (
+    <div className="dashboard-container">
+        <Navigation />
+        <div
+            className={`upload-container ${dragging ? 'dragging' : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+        >
+            <div className="upload-box">
+                <label htmlFor="file-upload" className="upload-label">
+                    <input
+                        id="file-upload"
+                        type="file"
+                        accept=".xlsx"
+                        onChange={handleFileChange}
+                    />
+                    <div className="upload-icon">⬆️</div>
+                    {file ? (
+                        <p className="upload-text">Archivo Cargado: {file.name}</p>
+                    ) : (
+                        <p className="upload-text">
+                            Arrastra y suelta archivos de excel
+                        </p>
+                    )}
+                    {file && (
+                        <>
+                            {loader ? (
+                                <>
                                     <div className="loader-container">
                                         <div className="loader"></div>
                                     </div>
                                     <h5>
-                                        Total de Casos: <strong className='total'>{totales} </strong>  
-                                        Correctos: <strong className='corectos'>{correctos} </strong> 
-                                        Incorrectos: <strong className='incorrectos'>{incorrectos} </strong> 
+                                        Total de Casos: <strong className='total'>{totales} </strong>
+                                        Correctos: <strong className='corectos'>{correctos} </strong>
+                                        Incorrectos: <strong className='incorrectos'>{incorrectos} </strong>
                                     </h5>
-                                    </>
-                                ) : (
-                                    <button
-                                        onClick={(e) => handleImport(e)}
-                                        className="select-file-btn"
-                                    >
-                                        Importar
-                                    </button>
-                                )}
-                            </>
-                        )}
-                    </label>
-                </div>
+                                </>
+                            ) : (
+                                <button
+                                    onClick={(e) => handleImport(e)}
+                                    className="select-file-btn"
+                                >
+                                    Importar
+                                </button>
+                            )}
+                        </>
+                    )}
+                </label>
             </div>
-            {file && (
-                <>
-                    <progress id="file" max={totales} value={valor}></progress>
-                    <div className="progress-text">{porcentaje}%</div>
-                </>
-            )}
         </div>
-    );
+        {file && (
+            <>
+                <progress id="file" max={totales} value={valor}></progress>
+                <div className="progress-text">{porcentaje}%</div>
+            </>
+        )}
+    </div>
+);
 };
