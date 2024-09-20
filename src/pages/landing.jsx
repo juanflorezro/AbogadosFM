@@ -39,8 +39,8 @@ export const Landing = () => {
                     text: "Usted a Ingresado Correctamente",
                     icon: "success"
                 })
-                document.cookie = `iv = ${res.data.resp.iv}; max-age=${60 * 480}; path=/; samesite=strict`
-                document.cookie = `encripted = ${res.data.resp.encripted}; max-age=${60 * 480}; path=/; samesite=strict`
+                document.cookie = `iv = ${res.data.resp.iv}; max-age=${60 * 1440}; path=/; samesite=strict`
+                document.cookie = `encripted = ${res.data.resp.encripted}; max-age=${60 * 1440}; path=/; samesite=strict`
                 navigate('/Home')
                 setLoader(false)
             })

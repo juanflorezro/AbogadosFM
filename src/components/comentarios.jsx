@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Axios from '../hooks/useAxios'
 import './comentarios.css'
-const Comentarios = ({ caso, setCasos, setCaso, casos }) => {
+const Comentarios = ({ caso, setCasos, setCaso, casos, permiss }) => {
     const [nuevoComentario, setNuevoComentario] = useState('');
     const [comentarios, setComentarios] = useState(caso.comentarios || [])
     const [loading, setLoading] = useState(false);
@@ -45,6 +45,7 @@ const Comentarios = ({ caso, setCasos, setCaso, casos }) => {
                 .then(res => {
                     console.log(res.data.caso.comentarios)
                     setComentarios(res.data.caso.comentarios)
+                    
                 })
                 .catch(err => {
                     console.log(err)
@@ -69,6 +70,7 @@ const Comentarios = ({ caso, setCasos, setCaso, casos }) => {
             Axios('DELETE', `casos/${caso._id}/comentarios/${id}`)
                 .then(res => {
                     console.log(res.data)
+                    setCaso({...caso, comentarios: comentariosActualizados})
                 })
                 .catch(err => {
                     console.log(err)
@@ -116,10 +118,15 @@ const Comentarios = ({ caso, setCasos, setCaso, casos }) => {
                                 </div>
                                 <p className="comentario-text">{comentario.texto}</p>
                                 {
-                                    comentario._id && (
-                                        <button className="comentario-button" onClick={() => handleDeleteComentario(comentario._id)}>Eliminar</button>
+                                    permiss === 'admin' && (
+                                        
+                                            comentario._id && (
+                                                <button className="comentario-button" onClick={() => handleDeleteComentario(comentario._id)}>Eliminar</button>
+                                            )
+                                        
                                     )
                                 }
+                                
                             </li>
                         ))}
                     </ul>
