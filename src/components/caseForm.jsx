@@ -258,7 +258,7 @@ const CaseForm = ({ caseId, setCaso, cerrar, user, casos, setCasos }) => {
 
                     <div className="form-group">
                         <label htmlFor=" claseDeProceso">CLASE DE PROCESO</label>
-                        <label htmlFor=" claseDeProceso">{getFieldValue(' claseDeProceso')}</label>
+                        <label htmlFor=" claseDeProceso">{getFieldValue('claseDeProceso')}</label>
                     </div>
 
                     <div className="form-group">
@@ -268,7 +268,7 @@ const CaseForm = ({ caseId, setCaso, cerrar, user, casos, setCasos }) => {
 
                     <div className="form-group">
                         <label htmlFor=" pretensionesEnDinero">PRETENSIONES EN DINERO</label>
-                        <label htmlFor=" pretensionesEnDinero">{getFieldValue(' pretensionesEnDinero')}</label>
+                        <label htmlFor=" pretensionesEnDinero">{getFieldValue('pretensionesEnDinero')}</label>
                     </div>
 
                     <div className="form-group">

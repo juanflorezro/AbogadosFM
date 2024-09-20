@@ -15,47 +15,29 @@ export const Home = ({ unique }) => {
     //conts loader
     const [loader, setLoader] = useState(false)
 
-
     // const paginacion
     const [totalCasos, setTotalCasos] = useState(0)
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const recordsPerPage = 5;
 
-    //const para modals
+    //const para modals o fractmebtos ocultos
     const [isModalOpen, setIsModalOpen] = useState(false)
-
+    const [isFormOpen, setIsFormOpen] = useState(false)
+    const [filtrar, setFiltrar] = useState(false)
     //CaseFrom props
 
+    //Modal Pros
+    const [cuantos, setCuantos] = useState(null)
+    const [mostrar, setMostrar] = useState([])
     const [casoId, setCasoId] = useState({})
 
-    const [selectedFields, setSelectedFields] = useState([]);
-    const allFields = [
-        'numero', 'codigo', 'titulo', 'cliente.nombre', 'asunto', 'area', 'fechaDeAsignacion',
-        'centroDeTrabajo', 'directorACargo.nombre', 'abogadoACargo.nombre', 'abogadoInternoDeLaCompania.nombre',
-        'siniestro.numero', 'fechaSiniestro', 'poliza', 'ramo', 'amparo', 'numeroAplicativo', 'ciudad',
-        'juzgadoInt.nombre', 'radicado', 'parteActiva', 'partePasiva', 'tipoDeTramite', 'claseDeProceso',
-        'tipoDeVinculacionCliente', 'pretensionesEnDinero', 'calificacionInicialContingencia',
-        'calificacionActualContingencia', 'motivoDeLaCalificacion', 'fechaAdmisionVinculacion',
-        'fechaDeNotificacion', 'instancia', 'etapaProcesal', 'claseDeMedidaCautelar', 'honorariosAsignados',
-        'autoridadDeConocimiento', 'delito', 'placa', 'evento', 'probabilidadDeExito', 'valorIndemnizadoCliente',
-        'entidadAfectada', 'fechaDePagoCliente', 'tipoContragarantia', 'montoDeProvision', 'tipoDeMoneda',
-        'fechaDeTerminacion', 'motivoDeTerminacion', 'cliente2', 'fechaDeAsignacion2',
-        'abogadoInternoDeLaCompania2', 'siniestro2.numero', 'numeroDeAplicativo2', 'fechaDeNotificacion2',
-        'seInicioEjecutivoAContinuacionDeOrdinario', 'honorariosAsignados2', 'valorPagado',
-        'personaQueRealizoElPago', 'fechaDeRadicacionDeLaContestacion', 'fechaDeRadicacionDeLaContestacion2',
-        'departamento', 'asegurado', 'jurisdiccion', 'juzgado.nombre', 'fechaUltimaActuacion',
-        'tituloUltimaActuacion'
-    ];
-
-    useEffect(() => {
-        handleSearch(currentPage)
-    }, [currentPage])
 
     const [user, setUser] = useState(localStorage.getItem('usuario'))
-
-    const [filtrar, setFiltrar] = useState(false)
+    //coincidencias
     const [proceso, setProceso] = useState('')
+
+    //filtro avanzado
     const [cliente, setCliente] = useState('')
     const [area, setArea] = useState('')
     const [centroTrabajo, setCentroTrabajo] = useState('')
@@ -63,17 +45,21 @@ export const Home = ({ unique }) => {
     const [claseDeProceso, setClaseDeProceso] = useState('')
     const [ciudad, setCiudad] = useState('')
     const [fechaFin, setFechaFin] = useState('')
-    const [isFormOpen, setIsFormOpen] = useState(false)
-    const debouncedProceso = useDebounce(proceso, 600)
-    const [cuantos, setCuantos] = useState(null)
-    const [mostrar, setMostrar] = useState([])
-    const navigate = useNavigate()
-    useEffect(() => {
 
-    }, [])
+    //retraso paea la busqueda en la barra
+    const debouncedProceso = useDebounce(proceso, 1000)
+    const navigate = useNavigate()
+
+
+    useEffect(() => {
+        handleSearch(currentPage)
+    }, [currentPage])
+
+    //para la busqueda automatica
     useEffect(() => {
         if (debouncedProceso) {
-            handleSearch();
+            handleSearch(1)
+            setCurrentPage(1)
         }
     }, [debouncedProceso]);
 
@@ -82,37 +68,8 @@ export const Home = ({ unique }) => {
         setFiltrar(!filtrar)
     }
 
-
-
-    const getUnique = (array, key) => {
-        return array.reduce((acc, item) => {
-            const value = item[key];
-
-            // Si el valor es un objeto, compara por _id
-            if (typeof value === 'object' && value !== null) {
-                if (!acc.find(obj => obj._id === value._id)) {
-                    acc.push(value);
-                }
-            }
-            // Si el valor es una cadena, verifica directamente
-            else if (typeof value === 'string') {
-                if (!acc.includes(value)) {
-                    acc.push(value);
-                }
-            }
-
-            return acc;
-        }, []);
-    }
-
-
-
-
     const handleSearch = (currentPage) => {
-
         let data = {}
-
-
         if (filtrar) {
             setLoader(true)
             if (cliente) data.cliente = cliente;
@@ -205,11 +162,18 @@ export const Home = ({ unique }) => {
                                 <FieldSelectorModal
                                     isOpen={isModalOpen}
                                     onRequestClose={() => setIsModalOpen(false)}
-                                    fields={allFields}
-                                    onSelectFields={setSelectedFields}
                                     casos={casos}
                                     mostrar={mostrar}
                                     cuantos={cuantos}
+                                    proceso ={proceso}
+                                    cliente = {cliente}
+                                    area = {area}
+                                    centroTrabajo = {centroTrabajo}
+                                    abogado = {abogado}
+                                    claseDeProceso = {claseDeProceso}
+                                    ciudad = {ciudad}
+                                    fechaFin = {fechaFin}
+                                    unique={unique}
                                 />
                             </div>
                             <button className="search-button" onClick={() => {

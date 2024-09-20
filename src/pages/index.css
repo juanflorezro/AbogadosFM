@@ -231,3 +231,8 @@ table td button:hover {
     background: none;
     padding: 9%;
 }
+
+
+.input-sele{
+    text-transform: lowercase;
+}
