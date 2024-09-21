@@ -3,7 +3,8 @@ import './landing.css'
 import Axios from "../hooks/useAxios"
 import { useNavigate } from "react-router-dom"
 import Swal from "sweetalert2"
-
+import globales from '../hooks/useGlobales'
+import CryptoJS from 'crypto-js'
 
 export const Landing = () => {
     const [usuario, setUsuario] = useState(null)
@@ -15,6 +16,7 @@ export const Landing = () => {
         Axios('POST', 'login/validacion', null)
             .then((res) => {
                 navigate('/home')
+                document.cookie = `token-accses = ${CryptoJS.AES.encrypt(res.data.usuario, globales().SECRECT).toString()}; max-age=${60 * 1440}; path=/; samesite=strict`
                 Swal.fire({
                     position: "center",
                     icon: "success",
@@ -26,7 +28,7 @@ export const Landing = () => {
             .catch(err => {
                 console.log(err.response)
             })
-    },[])
+    },[navigate])
 
 
     const login = () => {
